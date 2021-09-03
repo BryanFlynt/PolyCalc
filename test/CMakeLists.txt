@@ -43,4 +43,5 @@ function(add_catch_test test_name)
 endfunction()
 
 
-add_catch_test(test_jacobi)
+add_catch_test(jacobi)
+add_catch_test(lagrange)

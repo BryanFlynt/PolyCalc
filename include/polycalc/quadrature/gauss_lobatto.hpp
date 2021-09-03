@@ -75,8 +75,6 @@ std::vector<typename GaussLobatto<T, P>::value_type> GaussLobatto<T, P>::zeros(c
 template <typename T, typename P>
 std::vector<typename GaussLobatto<T, P>::value_type> GaussLobatto<T, P>::weights(const unsigned n) const {
     assert(n > 0);
-    using std::pow;
-    using std::tgamma;
 
     // Weights to return
     std::vector<value_type> w(n);
@@ -102,8 +100,8 @@ std::vector<typename GaussLobatto<T, P>::value_type> GaussLobatto<T, P>::weights
         const value_type apb = alpha_ + beta_;
 
         value_type fac;
-        fac = pow(two, apb + one) * tgamma(alpha_ + n) * tgamma(beta_ + n);
-        fac /= (n - 1) * tgamma(n) * tgamma(alpha_ + beta_ + n + one);
+        fac = std::pow(two, apb + one) * std::tgamma(alpha_ + n) * std::tgamma(beta_ + n);
+        fac /= (n - 1) * std::tgamma(n) * std::tgamma(alpha_ + beta_ + n + one);
 
         for (size_type i = 0; i < n; ++i) {
             w[i] = fac / (w[i] * w[i]);

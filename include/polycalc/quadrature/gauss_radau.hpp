@@ -82,8 +82,6 @@ template <typename T, typename P>
 template <int Z1>
 std::vector<typename GaussRadau<T, P>::value_type> GaussRadau<T, P>::weights(const unsigned n) const {
     assert(n > 0);
-    using std::pow;
-    using std::tgamma;
 
     if (n == 1) {
         return std::vector<value_type>(1, 2);
@@ -106,16 +104,16 @@ std::vector<typename GaussRadau<T, P>::value_type> GaussRadau<T, P>::weights(con
     value_type fac;
 
     if constexpr (Z1 == +1) {  // Z = +1
-        fac = pow(two, apb) * tgamma(alpha_ + n) * tgamma(beta_ + n);
-        fac /= tgamma(n) * (alpha_ + n) * tgamma(apb + n + 1);
+        fac = std::pow(two, apb) * std::tgamma(alpha_ + n) * std::tgamma(beta_ + n);
+        fac /= std::tgamma(n) * (alpha_ + n) * std::tgamma(apb + n + 1);
 
         for (size_type i = 0; i < n; ++i) {
             w[i] = fac * (one + z[i]) / (w[i] * w[i]);
         }
         w[n - 1] *= (alpha_ + one);
     } else if constexpr (Z1 == -1) {  // Z = -1
-        fac = pow(two, apb) * tgamma(alpha_ + n) * tgamma(beta_ + n);
-        fac /= tgamma(n) * (beta_ + n) * tgamma(apb + n + 1);
+        fac = std::pow(two, apb) * std::tgamma(alpha_ + n) * std::tgamma(beta_ + n);
+        fac /= std::tgamma(n) * (beta_ + n) * std::tgamma(apb + n + 1);
 
         for (size_type i = 0; i < n; ++i) {
             w[i] = fac * (one - z[i]) / (w[i] * w[i]);

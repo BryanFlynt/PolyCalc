@@ -13,7 +13,7 @@
 #include <limits>
 #include <vector>
 
-#include "parameters.hpp"
+#include "polycalc/parameters.hpp"
 
 namespace polycalc {
 namespace interpolation {
@@ -37,7 +37,7 @@ class Lagrange {
      *
      * @param points Iterable container of point locations
      */
-    template <IterableContainer>
+    template <typename IterableContainer>
     Lagrange(const IterableContainer& points);
 
     /**
@@ -45,12 +45,8 @@ class Lagrange {
      *
      * @param points Iterable container of point locations
      */
-    template <IterableContainer>
-    void set_points(const IterableContainer& points) {
-        x_.clear();
-        std::copy(points.begin(), points.end(), std::back_inserter(x_));
-        this->init_();
-    }
+    template <typename IterableContainer>
+    void reset(const IterableContainer& points);
 
     /**
      * Return the i'th polynomial evaluated at location x
@@ -97,7 +93,7 @@ class Lagrange {
 
    protected:
     /// Precompute the denominators
-    void init_();
+    void precompute_();
 
    private:
     std::vector<value_type> x_;  ///< Node Locations
@@ -108,55 +104,67 @@ namespace detail {
 
 /// Perform Subtraction with less Subtractive Cancellation
 /**
- *
+ * When values are close it strips off the simular parts and scales up the 
+ * remainder to perform the subtraction.  Then unscales the difference of the 
+ * remainder to proces a "better" answer.  
+ * 
+ * @note
+ * Expensive so only use when necessary.
  */
+// template <typename T>
+// T calc_diff(const T x, const T y) {
+
+//     // If the values are "far" away then skip
+//     if ( static_cast<T>(1.0E-4) < std::abs(x - y) ){
+//         return (x - y);
+//     }
+
+//     using int_type  = long int;
+//     using real_type = long double;
+
+//     constexpr auto eps  = std::numeric_limits<real_type>::epsilon();
+//     const auto digits   = static_cast<int_type>(std::abs(std::floor(std::log10(eps))) - 1);
+//     const auto sub_expn = static_cast<int_type>(std::floor(std::log10(std::abs(x - y))));
+//     assert(sub_expn < 0);
+
+//     const real_type scaled_x  = x * std::pow(10ULL, -sub_expn);              // Scale up by non-overlaping digits
+//     const real_type remain_x  = scaled_x - std::floor(scaled_x);             // Get remainder that is different
+//     const real_type scaled_rx = remain_x * std::pow(10ULL, digits+sub_expn); // Scale up remainder to max precision
+//     const real_type trimed_rx = std::round(scaled_rx);                       // Remove junk that cannot be represented
+
+//     const real_type scaled_y  = y * std::pow(10ULL, -sub_expn);              // Scale up by non-overlaping digits
+//     const real_type remain_y  = scaled_y - std::floor(scaled_y);             // Get remainder that is different
+//     const real_type scaled_ry = remain_y * std::pow(10ULL, digits+sub_expn); // Scale up remainder to may precision
+//     const real_type trimed_ry = std::round(scaled_ry);                       // Remove junk that cannot be represented
+
+//     return static_cast<T>(trimed_rx - trimed_ry) * std::pow(10ULL, -digits); // Unscale the difference of remainder
+// };
+
+
 template <typename T>
 T calc_diff(const T x, const T y) {
-
-    // If the values are "far" away then skip
-    if (std::abs(x - y) < static_cast<T>(0.0001)) {
-        return (x - y);
-    }
-
-    using int_type  = long int;
-    using real_type = long double;
-
-    constexpr auto eps  = std::numeric_limits<real_type>::epsilon();
-    const auto digits   = static_cast<int_type>(std::abs(std::floor(std::log10(eps))) - 1);
-    const auto sub_expn = static_cast<int_type>(std::floor(std::log10(std::abs(x - y))));
-    assert(sub_expn < 0);
-
-    const real_type scaled_x  = x * std::pow(10ULL, -sub_expn);              // Scale up by non-overlaping digits
-    const real_type remain_x  = scaled_x - std::floor(scaled_x);             // Get remainder that is different
-    const real_type scaled_rx = remain_x * std::pow(10ULL, digits+sub_expn); // Scale up remainder to max precision
-    const real_type trimed_rx = std::round(scaled_rx);                       // Remove junk that cannot be represented
-
-    const real_type scaled_y  = y * std::pow(10ULL, -sub_expn);              // Scale up by non-overlaping digits
-    const real_type remain_y  = scaled_y - std::floor(scaled_y);             // Get remainder that is different
-    const real_type scaled_ry = remain_y * std::pow(10ULL, digits+sub_expn); // Scale up remainder to may precision
-    const real_type trimed_ry = std::round(scaled_ry);                       // Remove junk that cannot be represented
-
-    return static_cast<T>(trimed_rx - trimed_ry) * std::pow(10ULL, -digits); // Unscale the difference of remainder
+    return (x - y);
 };
 
 } /* namespace detail */
 
 template <typename T, typename P>
-template <IterableContainer>
+template <typename IterableContainer>
 Lagrange<T, P>::Lagrange(const IterableContainer& points) {
-    this->set_points(points);
+    this->reset(points);
 }
 
 template <typename T, typename P>
-template <IterableContainer>
-void Lagrange<T, P>::set_points(const IterableContainer& points) {
+template <typename IterableContainer>
+void Lagrange<T, P>::reset(const IterableContainer& points) {
     x_.clear();
     std::copy(points.begin(), points.end(), std::back_inserter(x_));
-    this->init_();
+    this->precompute_();
 }
 
 template <typename T, typename P>
 typename Lagrange<T, P>::value_type Lagrange<T, P>::eval(const size_type i, const value_type x) const {
+    assert(i >= 0);
     assert(i < x_.size());
 
     value_type product = 1;
@@ -172,8 +180,8 @@ typename Lagrange<T, P>::value_type Lagrange<T, P>::eval(const size_type i, cons
 
 template <typename T, typename P>
 typename Lagrange<T, P>::value_type Lagrange<T, P>::ddx(const size_type i, const value_type x) const {
+    assert(i >= 0);
     assert(i < x_.size());
-    using std::abs;
 
     const value_type one = 1;
 
@@ -184,7 +192,7 @@ typename Lagrange<T, P>::value_type Lagrange<T, P>::ddx(const size_type i, const
     for (size_type j = 0; j < x_.size(); ++j) {
         if (i != j) {
             dist = detail::calc_diff(x, x_[j]);
-            if (abs(dist) < params::TOL) {
+            if (std::abs(dist) < params::TOL) {
                 x_equals_point = true;
             } else {
                 rsum += one / dist;
@@ -200,12 +208,11 @@ typename Lagrange<T, P>::value_type Lagrange<T, P>::ddx(const size_type i, const
 }
 
 template <typename T, typename P>
-void Lagrange<T, P>::init_() {
-    using std::abs;
+void Lagrange<T, P>::precompute_() {
     const size_type sz = x_.size();
 
     d_.resize(sz);
-    std::fill(d_.begin().d_.end(), 1);
+    std::fill(d_.begin(),d_.end(), 1);
     for (size_type j = 0; j < sz; ++j) {
         for (size_type i = 0; i < j; ++i) {
             d_[j] *= detail::calc_diff(x_[j], x_[i]);
@@ -214,7 +221,7 @@ void Lagrange<T, P>::init_() {
             d_[j] *= detail::calc_diff(x_[j], x_[i]);
         }
         // Test for distinct points
-        assert(abs(d_[j]) > params::TOL);
+        assert(std::abs(d_[j]) > params::TOL);
     }
 }
 

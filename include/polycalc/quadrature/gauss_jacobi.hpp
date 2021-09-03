@@ -57,8 +57,6 @@ std::vector<typename GaussJacobi<T, P>::value_type> GaussJacobi<T, P>::zeros(con
 template <typename T, typename P>
 std::vector<typename GaussJacobi<T, P>::value_type> GaussJacobi<T, P>::weights(const unsigned n) const {
     assert(n > 0);
-    using std::pow;
-    using std::tgamma;
 
     // Get location of zeros
     auto z = this->zeros(n);
@@ -75,8 +73,8 @@ std::vector<typename GaussJacobi<T, P>::value_type> GaussJacobi<T, P>::weights(c
     const value_type np1 = 1 + n;
 
     value_type fac;
-    fac = pow(two, apb + one) * tgamma(poly_.alpha + np1) * tgamma(poly_.beta + np1);
-    fac /= tgamma(np1) * tgamma(apb + np1);
+    fac = std::pow(two, apb + one) * std::tgamma(poly_.alpha + np1) * std::tgamma(poly_.beta + np1);
+    fac /= std::tgamma(np1) * std::tgamma(apb + np1);
 
     for (size_type i = 0; i < n; ++i) {
         w[i] = fac / (w[i] * w[i] * (one - z[i] * z[i]));

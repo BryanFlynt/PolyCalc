@@ -1,32 +1,15 @@
-# Prerequisites
-*.d
+#
+# Files to ignore from git repo
+#
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# User created build directory if exists
+build/*
 
-# Precompiled Headers
-*.gch
-*.pch
+# Eclipse Project Files
+.project
+.cproject
+.pydevproject
+.settings
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# VSCode Files
+.vscode

@@ -9,8 +9,8 @@
 #include <cassert>
 #include <vector>
 
-#include "parameters.hpp"
-#include "polynomial/jacobi.hpp"
+#include "polycalc/parameters.hpp"
+#include "polycalc/polynomial/jacobi.hpp"
 
 namespace polycalc {
 namespace quadrature {
@@ -53,21 +53,56 @@ template <typename T, typename P>
 std::vector<typename GaussLobatto<T, P>::value_type> GaussLobatto<T, P>::zeros(const unsigned n) const {
     assert(n > 0);
 
+    // Good Decimal Calculator found at following site
+    // https://keisan.casio.com/exec/system/1280801905
+
     // Zeros to return
     std::vector<value_type> x(n);
 
-    if (1 == n) {
-        x[0] = 0.0;
-    } else if (2 == n) {
-        x[0] = -1.0;
-        x[1] = +1.0;
-    } else {
-        polynomial jac(alpha_ + 1, beta_ + 1);
-        auto zeros = jac.zeros(n - 2);
+    switch (n) {
+        case 1:
+            x[0] = 0.0;
+            break;
+        case 2:
+            x[0] = -1.0;
+            x[1] = +1.0;
+            break;
+        case 3:
+            x[0] = -1.0;
+            x[1] = 0.0;
+            x[2] = +1.0;
+            break;
+        case 4:
+            x[0] = -1.0;
+            x[1] = -std::sqrt(5.0L) / 5.0L;
+            x[2] = +std::sqrt(5.0L) / 5.0L;
+            x[3] = +1.0;
+            break;
+        case 5:
+            x[0] = -1.0;
+            x[1] = -std::sqrt(21.0L) / 7.0L;
+            x[2] = 0.0;
+            x[3] = +std::sqrt(21.0L) / 7.0L;
+            x[4] = +1.0;
+            break;
+        case 6:
+            x[0] = -1.0;
+            x[1] = -std::sqrt((7.0L+2.0L*std::sqrt(7.0L))/21.0L);
+            x[2] = -std::sqrt((7.0L-2.0L*std::sqrt(7.0L))/21.0L);
+            x[3] = +std::sqrt((7.0L-2.0L*std::sqrt(7.0L))/21.0L);
+            x[4] = +std::sqrt((7.0L+2.0L*std::sqrt(7.0L))/21.0L);
+            x[5] = +1.0;
+            break;
+        default:
+            polynomial jac(alpha_ + 1, beta_ + 1);
+            auto zeros = jac.zeros(n - 2);
 
-        x[0] = -1.0;
-        std::copy(zeros.begin(), zeros.end(), x.begin() + 1);
-        x[n - 1] = +1.0;
+            x.front() = -1.0;
+            std::copy(zeros.begin(), zeros.end(), x.begin() + 1);
+            x.back() = +1.0;
+            if (!(n % 2 == 0)) {
+                x[std::ptrdiff_t(n / 2)] = 0;  // Correct 10E-16 error at zero
+            }
     }
     return x;
 }
@@ -76,38 +111,70 @@ template <typename T, typename P>
 std::vector<typename GaussLobatto<T, P>::value_type> GaussLobatto<T, P>::weights(const unsigned n) const {
     assert(n > 0);
 
+    // Good Decimal Calculator found at following site
+    // https://keisan.casio.com/exec/system/1280801905
+    
     // Weights to return
     std::vector<value_type> w(n);
 
-    if (1 == n) {
-        w[0] = 2.0;
-    } else if (2 == n) {
-        w[0] = 1.0;
-        w[1] = 1.0;
-    } else {
-        // Get location of zeros
-        auto z = this->zeros(n);
+    switch (n) {
+        case 1:
+            w[0] = +2.0;
+            break;
+        case 2:
+            w[0] = +1.0;
+            w[1] = +1.0;
+            break;
+        case 3:
+            w[0] = 1.0L / 3.0L;
+            w[1] = 4.0L / 3.0L;
+            w[2] = 1.0L / 3.0L;
+            break;
+        case 4:
+            w[0] = 1.0L / 6.0L;
+            w[1] = 5.0L / 6.0L;
+            w[2] = 5.0L / 6.0L;
+            w[3] = 1.0L / 6.0L;
+            break;
+        case 5:
+            w[0] =  1.0L / 10.0L;
+            w[1] = 49.0L / 90.0L;
+            w[2] = 32.0L / 45.0L;
+            w[3] = 49.0L / 90.0L;
+            w[4] =  1.0L / 10.0L;
+            break;
+        case 6:
+            w[0] =  1.0L / 15.0L;
+            w[1] = (14.0L-std::sqrt(7.0L))/30.0L;
+            w[2] = (14.0L+std::sqrt(7.0L))/30.0L;
+            w[3] = (14.0L+std::sqrt(7.0L))/30.0L;
+            w[4] = (14.0L-std::sqrt(7.0L))/30.0L;
+            w[5] =  1.0L / 15.0L;
+            break;
+        default:
 
-        // Evaluate Jacobi n-1 polynomial at each zero
-        polynomial jac(alpha_, beta_);
-        std::vector<value_type> w(n);
-        for (size_type i = 0; i < n; ++i) {
-            w[i] = jac.eval(n - 1, z[i]);
-        }
+            // Get location of zeros
+            auto z = this->zeros(n);
 
-        const value_type one = 1;
-        const value_type two = 2;
-        const value_type apb = alpha_ + beta_;
+            // Evaluate Jacobi n-1 polynomial at each zero
+            polynomial jac(alpha_, beta_);
+            for (size_type i = 0; i < n; ++i) {
+                w[i] = jac.eval(n - 1, z[i]);
+            }
 
-        value_type fac;
-        fac = std::pow(two, apb + one) * std::tgamma(alpha_ + n) * std::tgamma(beta_ + n);
-        fac /= (n - 1) * std::tgamma(n) * std::tgamma(alpha_ + beta_ + n + one);
+            const value_type one = 1;
+            const value_type two = 2;
+            const value_type apb = alpha_ + beta_;
 
-        for (size_type i = 0; i < n; ++i) {
-            w[i] = fac / (w[i] * w[i]);
-        }
-        w[0] *= (beta_ + one);
-        w[n - 1] *= (alpha_ + one);
+            value_type fac;
+            fac = std::pow(two, apb + one) * std::tgamma(alpha_ + n) * std::tgamma(beta_ + n);
+            fac /= (n - 1) * std::tgamma(n) * std::tgamma(alpha_ + beta_ + n + one);
+
+            for (size_type i = 0; i < n; ++i) {
+                w[i] = fac / (w[i] * w[i]);
+            }
+            w[0] *= (beta_ + one);
+            w[n - 1] *= (alpha_ + one);
     }
     return w;
 }

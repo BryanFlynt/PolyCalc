@@ -9,8 +9,8 @@
 #include <cassert>
 #include <vector>
 
-#include "parameters.hpp"
-#include "polynomial/jacobi.hpp"
+#include "polycalc/parameters.hpp"
+#include "polycalc/polynomial/jacobi.hpp"
 
 namespace polycalc {
 namespace quadrature {

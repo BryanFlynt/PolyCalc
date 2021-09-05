@@ -72,27 +72,6 @@ std::vector<typename GaussLobatto<T, P>::value_type> GaussLobatto<T, P>::zeros(c
             x[1] = 0.0;
             x[2] = +1.0;
             break;
-        case 4:
-            x[0] = -1.0;
-            x[1] = -std::sqrt(5.0L) / 5.0L;
-            x[2] = +std::sqrt(5.0L) / 5.0L;
-            x[3] = +1.0;
-            break;
-        case 5:
-            x[0] = -1.0;
-            x[1] = -std::sqrt(21.0L) / 7.0L;
-            x[2] = 0.0;
-            x[3] = +std::sqrt(21.0L) / 7.0L;
-            x[4] = +1.0;
-            break;
-        case 6:
-            x[0] = -1.0;
-            x[1] = -std::sqrt((7.0L+2.0L*std::sqrt(7.0L))/21.0L);
-            x[2] = -std::sqrt((7.0L-2.0L*std::sqrt(7.0L))/21.0L);
-            x[3] = +std::sqrt((7.0L-2.0L*std::sqrt(7.0L))/21.0L);
-            x[4] = +std::sqrt((7.0L+2.0L*std::sqrt(7.0L))/21.0L);
-            x[5] = +1.0;
-            break;
         default:
             polynomial jac(alpha_ + 1, beta_ + 1);
             auto zeros = jac.zeros(n - 2);
@@ -129,27 +108,6 @@ std::vector<typename GaussLobatto<T, P>::value_type> GaussLobatto<T, P>::weights
             w[0] = 1.0L / 3.0L;
             w[1] = 4.0L / 3.0L;
             w[2] = 1.0L / 3.0L;
-            break;
-        case 4:
-            w[0] = 1.0L / 6.0L;
-            w[1] = 5.0L / 6.0L;
-            w[2] = 5.0L / 6.0L;
-            w[3] = 1.0L / 6.0L;
-            break;
-        case 5:
-            w[0] =  1.0L / 10.0L;
-            w[1] = 49.0L / 90.0L;
-            w[2] = 32.0L / 45.0L;
-            w[3] = 49.0L / 90.0L;
-            w[4] =  1.0L / 10.0L;
-            break;
-        case 6:
-            w[0] =  1.0L / 15.0L;
-            w[1] = (14.0L-std::sqrt(7.0L))/30.0L;
-            w[2] = (14.0L+std::sqrt(7.0L))/30.0L;
-            w[3] = (14.0L+std::sqrt(7.0L))/30.0L;
-            w[4] = (14.0L-std::sqrt(7.0L))/30.0L;
-            w[5] =  1.0L / 15.0L;
             break;
         default:
 

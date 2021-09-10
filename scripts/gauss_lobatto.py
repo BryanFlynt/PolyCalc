@@ -81,17 +81,39 @@ def gauss_lobatto(n, n_digits):
     return xi, wi
 
 
-digits = 36
-npoints = list(range(2,17))
+digits = 38
+npoints = list(range(2,22))
 
+#
+# Location Case
+#
+print('switch(n) {')
 for n in npoints:
     xi, wi = gauss_lobatto(n, digits)
     
-    print('\nN = %3d'%(n))
+    print('case %d:'%(n))
     for i in range(0,n):
-        print('%3d %40.36f %40.36f'%(i+1,xi[i],wi[i]))
+        print('*iter++ = %s;'%(str(xi[i])))
     
+    print('break;')
+print('default:')
+print(' ')
+print('}')
+        
+#
+# Weight Case
+#
+print('switch(n) {')
+for n in npoints:
+    xi, wi = gauss_lobatto(n, digits)
     
+    print('case %d:'%(n))
+    for i in range(0,n):
+        print('*iter++ = %s;'%(str(wi[i])))
     
+    print('break;')
+print('default:')
+print(' ')
+print('}')  
     
     

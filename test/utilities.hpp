@@ -9,7 +9,7 @@
 
 template <class T>
 typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type almost_equal(T x, T y) {
-    constexpr T eps  = std::numeric_limits<T>::epsilon();
+    constexpr T eps  = 10 * std::numeric_limits<T>::epsilon();
     constexpr T zero = 0;
     const T abs_diff = std::abs(x - y);
 

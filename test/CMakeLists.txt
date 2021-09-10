@@ -44,5 +44,5 @@ endfunction()
 
 
 add_catch_test(jacobi)
+add_catch_test(gauss_lobatto_legendre)
 add_catch_test(lagrange)
-add_catch_test(gauss_lobatto)

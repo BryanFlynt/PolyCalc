@@ -92,19 +92,42 @@ def gauss_jacobi(n, alpha, beta, n_digits):
     return xi, wi
 
 
-alpha = 0
-beta  = 0
-digits = 36
-npoints = list(range(1,17))
+alpha = 1
+beta  = 1
+digits = 38
+npoints = list(range(2,20))
 
+#
+# Location Case
+#
+print('switch(n) {')
 for n in npoints:
     xi, wi = gauss_jacobi(n, alpha, beta, digits)
     
-    print('\nN = %3d'%(n))
+    print('case %d:'%(n))
     for i in range(0,n):
-        print('%3d %40.36f %40.36f'%(i+1,xi[i],wi[i]))
+        print('*iter++ = %s;'%(str(xi[i])))
     
+    print('break;')
+print('default:')
+print(' ')
+print('}')
+        
+#
+# Weight Case
+#
+print('switch(n) {')
+for n in npoints:
+    xi, wi = gauss_jacobi(n, alpha, beta, digits)
     
+    print('case %d:'%(n))
+    for i in range(0,n):
+        print('*iter++ = %s;'%(str(wi[i])))
     
-    
+    print('break;')
+print('default:')
+print(' ')
+print('}')  
+
+
     

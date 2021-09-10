@@ -16,4 +16,10 @@ struct DefaultParameters {
 	static constexpr T TOL = 100*std::numeric_limits<T>::epsilon();
 };
 
+
+
+
+
+
+
 } /** polycalc **/
